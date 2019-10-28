@@ -1,0 +1,27 @@
+{
+  "name": "@acastellon/dns-client",
+  "version": "1.0.0",
+  "description": "DNS Client system for WS",
+  "main": "dns-client.js",
+  "scripts": {
+    "test": "set SERVER_ENVIRONMENT=local && node dns-client.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antonio-castellon/module-dns-client.git"
+  },
+  "keywords": [
+    "dns",
+    "ws",
+    "rest"
+  ],
+  "author": "Antonio Castellon",
+  "license": "MIT",
+  "dependencies": {
+    "@acastellon/rest": "^1.0.5"
+  },
+  "bugs": {
+    "url": "https://github.com/antonio-castellon/module-dns-client/issues"
+  },
+  "homepage": "https://github.com/antonio-castellon/module-dns-client#readme"
+}
