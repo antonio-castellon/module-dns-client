@@ -1,6 +1,6 @@
 {
   "name": "@acastellon/dns-client",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "DNS Client system for WS",
   "main": "dns-client.js",
   "scripts": {
