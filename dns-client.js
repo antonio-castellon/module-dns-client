@@ -8,7 +8,8 @@
 //
 // configuration example
 //  module.exports = {
-//     VALIDATE_CERTIFICATES : false   // to avoid problems with certificates self-signed in fetch
+//     VERSION : 'v1'       // version of the DNS (REST)
+//     , VALIDATE_CERTIFICATES : false   // to avoid problems with certificates self-signed in fetch
 //     , DNS_SERVER_URL : 'https://127.0.0.1:7777'
 // }
 //
