@@ -40,7 +40,7 @@ module.exports = function(setup) {
     // ASSIGNATIONS
     //
     model.getServiceAddress = getServiceAddress;
-    model.getRESTServiceData = getRESTServiceData;
+    model.getServiceData = getServiceData;
     model.registerService = registerService;
     model.dnsRefresh = dnsRefresh;
 
@@ -53,7 +53,7 @@ module.exports = function(setup) {
     }
 
     async function postData(url, path, json){
-        return await fetch(url + path,
+        return await fetch(url  + '/' + path,
                             {   agent
                                 ,method: 'post'
                                 , headers : {
@@ -76,13 +76,24 @@ module.exports = function(setup) {
 
         if (serviceAddress == null) {  // ask the DNS
 
-            console.log('...asking DNS for address : ' + setup.DNS_SERVER_URL +'/get/' + service_id);
-            serviceAddress = await fetch(setup.DNS_SERVER_URL + '/get/' + service_id, { agent })
+            if (activeDNS.length == 0) await dnsRefresh();
+
+            //console.log('...asking DNS for address : ' + activeDNS[0] + '/' + setup.VERSION +'/get/' + service_id);
+            serviceAddress = await fetch(activeDNS[0] + '/' + setup.VERSION + '/get/' + service_id, { agent })
             serviceAddress = await serviceAddress.json();
-            console.log(serviceAddress);
+
+            if (serviceAddress.service != null) {  services[service_id] = serviceAddress; }
+
+            //console.log(serviceAddress);
+            return serviceAddress;
+        }
+        else {
+
+            //console.log(serviceAddress);
+            return serviceAddress;
         }
 
-        return serviceAddress;
+
     }
 
     /**
@@ -90,20 +101,36 @@ module.exports = function(setup) {
      *
      * @param service_id        - Identification of the service, i.e: Fruits.Supermarket.com
      * @param service_path      - REST service path, i.e.: /get/fruit/12/properties
+     * @param jObject           - JSON Object Data used in a POST request.
      * @returns {Promise<void>}  - the Data requested from the Service pre-registered in a DNS Service Server, {data : <data>}
      */
-    async function getRESTServiceData(service_id, service_path) {
+    async function getServiceData(service_id, service_path, jObject) {
 
-        const serviceAddress = getServiceAddress(service_id);
+        const serviceAddress = await getServiceAddress(service_id);
 
-        if (serviceAddress != null && typeof  serviceAddress.service != 'undefined') {
-            console.log(' ... looking for data at : ' + serviceAddress.service);
-            const result = await getData( serviceAddress.service, service_path || '');
-            const _data = await result.json();
-            return res.send({data : _data});
+        if (serviceAddress != null && typeof  serviceAddress.service != 'undefined')
+        {
+            const url = serviceAddress.service.PROTOCOL
+                + serviceAddress.service.IP_OR_CNAME
+                + ':' + serviceAddress.service.PORT;
+
+            //console.log(' ... looking for data at : ' + url  +'/' + service_path );
+
+            if (serviceAddress.service.METHOD == 'GET')
+            {
+                const result = await getData( url, service_path || '');
+                const _data = await result.json();
+                return {data : _data};
+
+            }
+            else {
+                const result = await postData( url, service_path || '', jObject);
+                const _data = await result.json();
+                return {data : _data};
+            }
         }
         else
-            return res.send({error: 'no service found for ' + service_id})
+            return {error: 'no service found for ' + service_id};
     }
 
 
