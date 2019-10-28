@@ -153,7 +153,7 @@ module.exports = function(setup) {
 
                 console.log(activeDNS[index]);
 
-                const res =  await postData(activeDNS[index], '/' + setup.VERSION + '/set/' + service_id, {
+                const res =  await postData(activeDNS[index], setup.VERSION + '/set/' + service_id, {
                     PROTOCOL : PROTOCOL
                     , PORT : PORT
                     , METHOD : METHOD
