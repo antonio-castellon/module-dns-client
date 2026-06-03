@@ -27,5 +27,12 @@
   "homepage": "https://github.com/antonio-castellon/module-dns-client#readme",
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "files": [
+    "dns-client.js",
+    "README.md",
+    "LICENSE",
+    "config.dns.js",
+    "test.js"
+  ]
 }
