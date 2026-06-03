@@ -16,6 +16,10 @@
 const fetch = require('node-fetch');
 const https = require('https');
 
+/**
+ * Service discovery client.
+ * @param {object} setup
+ */
 module.exports = function(setup) {
 
   const model = {};
@@ -44,6 +48,10 @@ module.exports = function(setup) {
     });
   }
 
+  /**
+   * @param {string} service_id
+   * @returns {Promise<object>}
+   */
   async function getServiceAddress(service_id) {
     let serviceAddress = services[service_id];
 
@@ -61,6 +69,11 @@ module.exports = function(setup) {
     return serviceAddress || { error: 'no service found for ' + service_id };
   }
 
+  /**
+   * @param {string} service_id
+   * @param {string} service_path
+   * @param {object} [jObject]
+   */
   async function getServiceData(service_id, service_path, jObject) {
     const serviceAddress = await getServiceAddress(service_id);
 
@@ -75,6 +88,13 @@ module.exports = function(setup) {
     return serviceAddress;
   }
 
+  /**
+   * @param {string} service_id
+   * @param {string} PROTOCOL
+   * @param {number} PORT
+   * @param {string} METHOD
+   * @returns {Promise<boolean>}
+   */
   async function registerService(service_id, PROTOCOL, PORT, METHOD) {
     let wasRegistered = false;
 
@@ -93,7 +113,11 @@ module.exports = function(setup) {
     return wasRegistered;
   }
 
-  async function dnsRefresh() {
+  /**
+   * @returns {Promise<string[]>}
+   */
+  async function dnsRefresh()
+  {
     activeDNS = Array.isArray(setup.DNS_SERVER_URL) ? [...setup.DNS_SERVER_URL] : (setup.DNS_SERVER_URL ? [setup.DNS_SERVER_URL] : []);
 
     for (let index = activeDNS.length - 1; index >= 0; index--) {
