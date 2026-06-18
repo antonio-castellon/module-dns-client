@@ -11,20 +11,47 @@
 //     VERSION : 'v1'
 //     , VALIDATE_CERTIFICATES : false
 //     , DNS_SERVER_URL : [ 'https://127.0.0.1:7777' ]
+//     // For secure service-to-service mTLS (recommended):
+//     , CERTIFICATION_PATH : '/path/to/certs'   // contains publicCert.pem, privateKey.pem, ca.pem (+ optional passphrase)
 // }
 //
 const fetch = require('node-fetch');
 const https = require('https');
+const fs = require('fs');
 
 /**
  * Service discovery client.
+ * Supports optional mTLS client certificates for secure inter-service calls
+ * (using the same CERTIFICATION_PATH layout as module-rest / module-graphql).
  * @param {object} setup
+ * @param {string} [setup.CERTIFICATION_PATH] - enables mTLS client cert for outgoing calls
  */
 module.exports = function(setup) {
 
   const model = {};
 
-  const agent = new https.Agent({ rejectUnauthorized: !!setup.VALIDATE_CERTIFICATES });
+  let agentOptions = { rejectUnauthorized: !!setup.VALIDATE_CERTIFICATES };
+
+  // Support mTLS for secure service-to-service calls (present client cert when configured)
+  if (setup.CERTIFICATION_PATH) {
+    try {
+      agentOptions.cert = fs.readFileSync(setup.CERTIFICATION_PATH + '/publicCert.pem');
+      agentOptions.key = fs.readFileSync(setup.CERTIFICATION_PATH + '/privateKey.pem');
+      agentOptions.ca = fs.readFileSync(setup.CERTIFICATION_PATH + '/ca.pem');
+      if (setup.PASSPHRASE_PATH || setup.passphrase) {
+        const pp = setup.passphrase || fs.readFileSync(setup.CERTIFICATION_PATH + '/passphrase', 'utf8').trim();
+        agentOptions.passphrase = pp;
+      }
+    } catch (e) {
+      console.warn('[@acastellon/dns-client] Could not load client certs for mTLS, falling back:', e.message);
+    }
+  } else if (setup.CLIENT_CERT || setup.clientCert) {
+    agentOptions.cert = setup.CLIENT_CERT || setup.clientCert;
+    agentOptions.key = setup.CLIENT_KEY || setup.clientKey;
+    if (setup.CA) agentOptions.ca = setup.CA;
+  }
+
+  const agent = new https.Agent(agentOptions);
 
   let activeDNS = Array.isArray(setup.DNS_SERVER_URL) ? [...setup.DNS_SERVER_URL] : (setup.DNS_SERVER_URL ? [setup.DNS_SERVER_URL] : []);
 
